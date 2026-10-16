@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   Event Management System
+  </title>
+  <style>
+   *{box-sizing:border-box}
+body{
+    margin:0;font-family:Arial,sans-serif;background:#f3f5fb;color:#252747
+}
+header{
+    background:linear-gradient(120deg,#4936b5,#8866e9);color:white;padding:25px
+}
+header h1{
+    margin:0 0 8px
+}
+nav{
+    display:flex;flex-wrap:wrap;gap:8px;margin-top:20px
+}
+nav button{
+    background:white;color:#4936b5;border:0;padding:11px 15px;border-radius:8px;cursor:pointer;font-weight:bold
+}
+nav button:hover{
+    background:#e8e1ff
+}
+main{
+    max-width:1150px;margin:25px auto;padding:0 15px
+}
+.page{
+    display:none
+}
+.page.active{display:block}
+h2{color:#4936b5}
+.cards{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px
+}
+.card,.panel{
+    background:white;padding:20px;border-radius:13px;box-shadow:0 4px 15px #20205010;margin-bottom:18px
+}
+.card h3{margin:0;color:#666}
+.number{font-size:30px;color:#7254dc;font-weight:bold;margin-top:12px}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #d8d8e8;border-radius:7px;font-size:14px}
+button,.action{background:#6748d4;color:white;border:0;border-radius:7px;padding:11px 15px;cursor:pointer}
+form button{align-self:end}
+table{width:100%;border-collapse:collapse;background:white;margin-top:15px}
+th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+th{background:#eeeaff;color:#4936b5}
+.table-wrap{overflow-x:auto}
+.event-item{border-left:5px solid #7856df;padding:14px;background:#f8f6ff;margin:12px 0;border-radius:7px}
+.small-btn{padding:7px 10px;margin:2px}
+footer{text-align:center;padding:20px;color:#777}
+@media(max-width:600px){header{padding:18px}nav button{flex:1}th,td{padding:8px;font-size:13px}}
+  </style>
+ </head>
+ <body>
+  <header>
+   <h1>
+    🎉 Event Management System
+   </h1>
+   <p>
+    Plan Events &bull; Register Participants &bull; Manage Venues
+   </p>
+   <nav>
+    <button onclick="showPage('dashboard')">
+     Dashboard
+    </button>
+    <button onclick="showPage('events')">
+     Events
+    </button>
+    <button onclick="showPage('participants')">
+     Participants
+    </button>
+    <button onclick="showPage('venues')">
+     Venues
+    </button>
+    <button onclick="showPage('schedule')">
+     Schedule
+    </button>
+    <button onclick="downloadFile()">
+     Export Records
+    </button>
+   </nav>
+  </header>
+  <main>
+   <section class="page active" id="dashboard">
+    <h2>
+     Dashboard
+    </h2>
+    <div class="cards">
+     <div class="card">
+      <h3>
+       Total Events
+      </h3>
+      <div class="number" id="eventCount">
+       0
+      </div>
+     </div>
+     <div class="card">
+      <h3>
+       Participants
+      </h3>
+      <div class="number" id="participantCount">
+       0
+      </div>
+     </div>
+     <div class="card">
+      <h3>
+       Venues
+      </h3>
+      <div class="number" id="venueCount">
+       0
+      </div>
+     </div>
+    </div>
+    <div class="panel">
+     <h2>
+      Welcome!
+     </h2>
+     <p>
+      Manage college events, participant registrations, venues and schedules in one place.
+     </p>
+     <h3>
+      Upcoming Events
+     </h3>
+     <div id="upcoming">
+     </div>
+    </div>
+   </section>
+   <section class="page" id="events">
+    <h2>
+     Manage Events
+    </h2>
+    <div class="panel">
+     <form id="eventForm">
+      <input id="eventName" placeholder="Event Name" required=""/>
+      <select id="eventType" required="">
+       <option value="">
+        Select Event Type
+       </option>
+       <option>
+        Symposium
+       </option>
+       <option>
+        Workshop
+       </option>
+       <option>
+        Seminar
+       </option>
+       <option>
+        Cultural
+       </option>
+       <option>
+        Sports
+       </option>
+      </select>
+      <input id="eventDate" required="" type="date"/>
+      <input id="eventTime" required="" type="time"/>
+      <input id="eventVenue" placeholder="Venue" required=""/>
+      <input id="eventOrganizer" placeholder="Organizer Name" required=""/>
+      <button type="submit">
+       Add Event
+      </button>
+     </form>
+    </div>
+    <div class="panel">
+     <input id="eventSearch" oninput="render()" placeholder="Search events..."/>
+     <div class="table-wrap">
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Name
+         </th>
+         <th>
+          Type
+         </th>
+         <th>
+          Date
+         </th>
+         <th>
+          Time
+         </th>
+         <th>
+          Venue
+         </th>
+         <th>
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody id="eventRows">
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </section>
+   <section class="page" id="participants">
+    <h2>
+     Participant Registration
+    </h2>
+    <div class="panel">
+     <form id="participantForm">
+      <input id="personName" placeholder="Participant Name" required=""/>
+      <input id="personEmail" placeholder="Email Address" required="" type="email"/>
+      <input id="personPhone" placeholder="Phone Number" required="" type="tel"/>
+      <select id="personEvent" required="">
+       <option value="">
+        Select Event
+       </option>
+      </select>
+      <button type="submit">
+       Register Participant
+      </button>
+     </form>
+    </div>
+    <div class="panel">
+     <h3>
+      Participant List
+     </h3>
+     <div class="table-wrap">
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Name
+         </th>
+         <th>
+          Email
+         </th>
+         <th>
+          Phone
+         </th>
+         <th>
+          Event
+         </th>
+         <th>
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody id="participantRows">
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </section>
+   <section class="page" id="venues">
+    <h2>
+     Venue Management
+    </h2>
+    <div class="panel">
+     <form id="venueForm">
+      <input id="venueName" placeholder="Venue Name" required=""/>
+      <input id="venueLocation" placeholder="Venue Location" required=""/>
+      <input id="venueCapacity" min="1" placeholder="Capacity" required="" type="number"/>
+      <button type="submit">
+       Add Venue
+      </button>
+     </form>
+    </div>
+    <div class="panel">
+     <div class="table-wrap">
+      <table>
+       <thead>
+        <tr>
+         <th>
+          Venue
+         </th>
+         <th>
+          Location
+         </th>
+         <th>
+          Capacity
+         </th>
+         <th>
+          Action
+         </th>
+        </tr>
+       </thead>
+       <tbody id="venueRows">
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </section>
+   <section class="page" id="schedule">
+    <h2>
+     Event Schedule
+    </h2>
+    <div class="panel" id="scheduleList">
+    </div>
+   </section>
+  </main>
+  <footer>
+   &copy; 2026 Event Management System | KRISHNAVENI M
+  </footer>
+  <script>
+   const getData = key => JSON.parse(localStorage.getItem(key) || "[]");
+const saveData = (key,data) => localStorage.setItem(key,JSON.stringify(data));
+
+let events = getData("ems_events");
+let participants = getData("ems_participants");
+let venues = getData("ems_venues");
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ render();
+}
+
+function safe(value){
+ return String(value ?? "").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function render(){
+ document.getElementById("eventCount").textContent=events.length;
+ document.getElementById("participantCount").textContent=participants.length;
+ document.getElementById("venueCount").textContent=venues.length;
+
+ const search=(document.getElementById("eventSearch")?.value||"").toLowerCase();
+ document.getElementById("eventRows").innerHTML=events
+ .filter(e=>(e.name+" "+e.type+" "+e.venue).toLowerCase().includes(search))
+ .map(e=>`<tr><td>${safe(e.name)}</td><td>${safe(e.type)}</td>
+ <td>${safe(e.date)}</td><td>${safe(e.time)}</td><td>${safe(e.venue)}</td>
+ <td><button class="small-btn" onclick="deleteEvent(${e.id})">Delete</button></td></tr>`).join("");
+
+ document.getElementById("personEvent").innerHTML=
+ '<option value="">Select Event</option>'+events.map(e=>
+ `<option value="${e.id}">${safe(e.name)}</option>`).join("");
+
+ document.getElementById("participantRows").innerHTML=participants.map(p=>
+ `<tr><td>${safe(p.name)}</td><td>${safe(p.email)}</td><td>${safe(p.phone)}</td>
+ <td>${safe(p.eventName)}</td><td><button class="small-btn" onclick="deleteParticipant(${p.id})">Delete</button></td></tr>`).join("");
+
+ document.getElementById("venueRows").innerHTML=venues.map(v=>
+ `<tr><td>${safe(v.name)}</td><td>${safe(v.location)}</td><td>${safe(v.capacity)}</td>
+ <td><button class="small-btn" onclick="deleteVenue(${v.id})">Delete</button></td></tr>`).join("");
+
+ document.getElementById("upcoming").innerHTML=events.length?
+ events.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5).map(e=>
+ `<div class="event-item"><b>${safe(e.name)}</b><br>${safe(e.date)} · ${safe(e.time)}<br>📍 ${safe(e.venue)}</div>`).join("")
+ :"<p>No events added yet. Open Events to create your first event.</p>";
+
+ document.getElementById("scheduleList").innerHTML=events.length?
+ events.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(e=>
+ `<div class="event-item"><b>${safe(e.date)} — ${safe(e.name)}</b><p>${safe(e.time)} | ${safe(e.venue)} | ${safe(e.type)}</p></div>`).join("")
+ :"<p>No scheduled events.</p>";
+}
+
+document.getElementById("eventForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ events.push({
+ id:Date.now(),name:document.getElementById("eventName").value.trim(),
+ type:document.getElementById("eventType").value,
+ date:document.getElementById("eventDate").value,
+ time:document.getElementById("eventTime").value,
+ venue:document.getElementById("eventVenue").value.trim(),
+ organizer:document.getElementById("eventOrganizer").value.trim()
+ });
+ saveData("ems_events",events);e.target.reset();render();
+ alert("Event added successfully!");
+});
+
+document.getElementById("participantForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ const selected=events.find(x=>x.id===Number(document.getElementById("personEvent").value));
+ if(!selected){alert("Please add and select an event first.");return;}
+ participants.push({
+ id:Date.now(),name:document.getElementById("personName").value.trim(),
+ email:document.getElementById("personEmail").value.trim(),
+ phone:document.getElementById("personPhone").value.trim(),
+ eventName:selected.name
+ });
+ saveData("ems_participants",participants);e.target.reset();render();
+ alert("Participant registered successfully!");
+});
+
+document.getElementById("venueForm").addEventListener("submit",e=>{
+ e.preventDefault();
+ venues.push({
+ id:Date.now(),name:document.getElementById("venueName").value.trim(),
+ location:document.getElementById("venueLocation").value.trim(),
+ capacity:Number(document.getElementById("venueCapacity").value)
+ });
+ saveData("ems_venues",venues);e.target.reset();render();
+ alert("Venue added successfully!");
+});
+
+function deleteEvent(id){
+ if(!confirm("Delete this event?"))return;
+ events=events.filter(e=>e.id!==id);
+ saveData("ems_events",events);render();
+}
+function deleteParticipant(id){
+ if(!confirm("Delete this participant?"))return;
+ participants=participants.filter(p=>p.id!==id);
+ saveData("ems_participants",participants);render();
+}
+function deleteVenue(id){
+ if(!confirm("Delete this venue?"))return;
+ venues=venues.filter(v=>v.id!==id);
+ saveData("ems_venues",venues);render();
+}
+
+function downloadFile(){
+ const lines=["EVENT MANAGEMENT SYSTEM RECORDS","","EVENTS"];
+ events.forEach(e=>lines.push(
+ `Name: ${e.name} | Type: ${e.type} | Date: ${e.date} | Time: ${e.time} | Venue: ${e.venue} | Organizer: ${e.organizer}`
+ ));
+ lines.push("","PARTICIPANTS");
+ participants.forEach(p=>lines.push(
+ `Name: ${p.name} | Email: ${p.email} | Phone: ${p.phone} | Event: ${p.eventName}`
+ ));
+ lines.push("","VENUES");
+ venues.forEach(v=>lines.push(
+ `Name: ${v.name} | Location: ${v.location} | Capacity: ${v.capacity}`
+ ));
+ const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="EventManagementRecords.txt";a.click();
+ URL.revokeObjectURL(url);
+}
+
+render();
+  </script>
+ </body>
+</html>
